@@ -75,7 +75,7 @@
 #     * verbose- True/False boolean to turn on / off logging, e.g. print details like iteration number and loss (https://en.wikipedia.org/wiki/Verbose_mode)
 #     * track_loss - True / False boolean when to save loss results to present later in learning curve graphs
 
-# In[11]:
+# In[30]:
 
 
 import numpy as np
@@ -86,13 +86,13 @@ from matplotlib.backends.backend_pdf import PdfPages
 from sklearn.linear_model import LinearRegression
 
 
-# In[12]:
+# In[31]:
 
 
 pdf_file = PdfPages('outputs.pdf')
 
 
-# In[13]:
+# In[32]:
 
 
 # `load_boston` has been removed from scikit-learn since version 1.2. 
@@ -102,7 +102,7 @@ data = np.loadtxt('housing.csv')
 X, y = data[:,:-1] , data[:,-1] 
 
 
-# In[14]:
+# In[33]:
 
 
 # what is p and n?
@@ -112,7 +112,7 @@ The number of observations n is {X.shape[0]}
 ''')
 
 
-# In[15]:
+# In[34]:
 
 
 # * write a model `Ols` which has a propoery $w$ and 3 methods: `fit`, `predict` and `score`.? hint: use [numpy.linalg.pinv](https://docs.scipy.org/doc/numpy-1.15.1/reference/generated/numpy.linalg.pinv.html) to be more efficient.
@@ -156,7 +156,7 @@ class Ols(object):
     return np.mean((Y - self.predict(X))**2)
 
 
-# In[16]:
+# In[35]:
 
 
 # Fit the model. What is the training MSE?
@@ -168,7 +168,7 @@ The MSE of house_prices over all boston features, using all the data set, is {ol
 ''')
 
 
-# In[17]:
+# In[36]:
 
 
 y_hat = ols.predict(X)
@@ -181,7 +181,7 @@ y_hat_mean = np.sort(y_hat_mean)
 y_sorted = np.sort(y)
 
 
-# In[18]:
+# In[37]:
 
 
 # Plot a scatter plot where on x-axis plot $Y$ and in the y-axis $\hat{Y}_{OLS}$
@@ -205,7 +205,7 @@ pdf_file.savefig(fig)
 # We can clearly see that the OLS model have relatively high performance over $Y<35$ but in higher prices the predicted price $\hat{Y}_{OLS}$ is negatively biased. 
 # This could be caused by data censorship in the features, a common problem in some survey data, due to privacy protection.     
 
-# In[19]:
+# In[38]:
 
 
 from sklearn.model_selection import train_test_split
@@ -226,7 +226,7 @@ The average MSE for train is {mean_mse_per_model[0] :.3f} and for the test is {m
 ''')
 
 
-# In[20]:
+# In[39]:
 
 
 # Use a t-test to proove that the MSE for training is significantly smaller than for testing. 
@@ -246,7 +246,7 @@ else:
     print(f'Training MSE is not significantly smaller than the testing MSE, we don\'t reject null at 0.95 significance . The test\'s p-values is {pv :.4f}')
 
 
-# In[21]:
+# In[40]:
 
 
 # Write a new class OlsGd which solves the problem using gradinet descent. 
@@ -339,7 +339,7 @@ class OlsGd(Ols):
     
 
 
-# In[22]:
+# In[41]:
 
 
 # Plot the loss convergance. for each alpha, learning rate plot the MSE with respect to number of iterations.
@@ -353,7 +353,7 @@ for col, lr in enumerate(learning_rates):
     labels.append(f'{lr} - learning rate')
 
 
-# In[23]:
+# In[42]:
 
 
 with plt.style.context('seaborn-colorblind'):
@@ -369,14 +369,14 @@ with plt.style.context('seaborn-colorblind'):
 pdf_file.savefig(fig)
 
 
-# In[24]:
+# In[43]:
 
 
 ols.fit(X,y)
 ols.score(X,y)
 
 
-# In[25]:
+# In[44]:
 
 
 np.min(loss_table, axis=0)
@@ -431,7 +431,7 @@ np.min(loss_table, axis=0)
 # \end{aligned}
 # $$
 
-# In[26]:
+# In[45]:
 
 
 class RidgeLs(Ols):
@@ -488,13 +488,13 @@ class RidgeGd(OlsGd):
 # &=E\left[y^{T}y\right]-2Ew^{T}X^{T}y+\left(1+\sigma^{2}\right)E\left[w^{T}X^{T}Xw\right] \\
 # &=EL_{OLS}+\sigma^{2}E\left[w^{T}X^{T}Xw\right] \\
 # &=EL_{OLS}+\sigma^{2}w^{T}E\left[X^{T}X\right]w \\
-# &=EL_{OLS}+\sigma^{2}\cdot\sigma_{X}^{2}w^{T}w \\
+# &=EL_{OLS}+\sigma^{2}w^{T} \Sigma_{X} w \\
 # &\underset{*}{=}MSE+\sigma^{2}w^{T}w \\
 # 
 # \end{aligned}
 # $$
 # 
-# \* Note: if $X$ is normalized and $\forall l,m\in \left[1,p\right]\; s.t \; l\neq m\; Cov\left(x_{l},x_{m}\right) =0$ we get $E\left[X^{T}X\right]=\sigma_{X}^{2}=I_{p}$
+# \* Note: if $X$ is normalized and $\forall l,m\in \left[1,p\right]\; s.t \; l\neq m\; Cov\left(x_{l},x_{m}\right) =0$ we get $E\left[X^{T}X\right]=\Sigma_{X}=I_{p}$
 # 
 # From the above we can see that if $X$ is normalized, i.e $X\sim N\left(0,I_{p}\right)$, we get that the Ridge loss function with $\lambda = \sigma^{2}$  
 # 
@@ -505,7 +505,7 @@ class RidgeGd(OlsGd):
 
 # ### Use scikitlearn implementation for OLS, Ridge and Lasso
 
-# In[27]:
+# In[46]:
 
 
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
@@ -525,7 +525,7 @@ Lasso MSE: {mse(y, y_lasso) :.3f} R^2 : {r2_score(y, y_lasso) :.3f}
 """)
 
 
-# In[28]:
+# In[47]:
 
 
 y_hat = ols.predict(X)
