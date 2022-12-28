@@ -75,15 +75,24 @@
 #     * verbose- True/False boolean to turn on / off logging, e.g. print details like iteration number and loss (https://en.wikipedia.org/wiki/Verbose_mode)
 #     * track_loss - True / False boolean when to save loss results to present later in learning curve graphs
 
-# In[84]:
+# In[11]:
 
 
 import numpy as np
 import matplotlib.pyplot as plt 
 from sklearn.linear_model import LinearRegression
 
+from matplotlib.backends.backend_pdf import PdfPages
+from sklearn.linear_model import LinearRegression
 
-# In[85]:
+
+# In[12]:
+
+
+pdf_file = PdfPages('outputs.pdf')
+
+
+# In[13]:
 
 
 # `load_boston` has been removed from scikit-learn since version 1.2. 
@@ -93,7 +102,7 @@ data = np.loadtxt('housing.csv')
 X, y = data[:,:-1] , data[:,-1] 
 
 
-# In[86]:
+# In[14]:
 
 
 # what is p and n?
@@ -103,7 +112,7 @@ The number of observations n is {X.shape[0]}
 ''')
 
 
-# In[87]:
+# In[15]:
 
 
 # * write a model `Ols` which has a propoery $w$ and 3 methods: `fit`, `predict` and `score`.? hint: use [numpy.linalg.pinv](https://docs.scipy.org/doc/numpy-1.15.1/reference/generated/numpy.linalg.pinv.html) to be more efficient.
@@ -147,7 +156,7 @@ class Ols(object):
     return np.mean((Y - self.predict(X))**2)
 
 
-# In[88]:
+# In[16]:
 
 
 # Fit the model. What is the training MSE?
@@ -159,7 +168,7 @@ The MSE of house_prices over all boston features, using all the data set, is {ol
 ''')
 
 
-# In[89]:
+# In[17]:
 
 
 y_hat = ols.predict(X)
@@ -172,14 +181,14 @@ y_hat_mean = np.sort(y_hat_mean)
 y_sorted = np.sort(y)
 
 
-# In[90]:
+# In[18]:
 
 
 # Plot a scatter plot where on x-axis plot $Y$ and in the y-axis $\hat{Y}_{OLS}$
 
 
 with plt.style.context('seaborn-colorblind'):
-    plt.figure(figsize=(9,9))
+    fig = plt.figure(figsize=(9,9))
     plt.plot(y, y, c='black', linestyle=(0, (5, 10)), label='median price')
     plt.scatter(y, y_hat, c='gray', label='predicted median price')
     plt.plot(y_sorted, y_hat_mean, c='red', linestyle='--', label='mean predicted median price')
@@ -190,11 +199,13 @@ with plt.style.context('seaborn-colorblind'):
     plt.tight_layout()
     plt.show()
 
+pdf_file.savefig(fig)
+
 
 # We can clearly see that the OLS model have relatively high performance over $Y<35$ but in higher prices the predicted price $\hat{Y}_{OLS}$ is negatively biased. 
 # This could be caused by data censorship in the features, a common problem in some survey data, due to privacy protection.     
 
-# In[91]:
+# In[19]:
 
 
 from sklearn.model_selection import train_test_split
@@ -215,7 +226,7 @@ The average MSE for train is {mean_mse_per_model[0] :.3f} and for the test is {m
 ''')
 
 
-# In[92]:
+# In[20]:
 
 
 # Use a t-test to proove that the MSE for training is significantly smaller than for testing. 
@@ -235,7 +246,7 @@ else:
     print(f'Training MSE is not significantly smaller than the testing MSE, we don\'t reject null at 0.95 significance . The test\'s p-values is {pv :.4f}')
 
 
-# In[93]:
+# In[21]:
 
 
 # Write a new class OlsGd which solves the problem using gradinet descent. 
@@ -328,7 +339,7 @@ class OlsGd(Ols):
     
 
 
-# In[94]:
+# In[22]:
 
 
 # Plot the loss convergance. for each alpha, learning rate plot the MSE with respect to number of iterations.
@@ -342,11 +353,11 @@ for col, lr in enumerate(learning_rates):
     labels.append(f'{lr} - learning rate')
 
 
-# In[95]:
+# In[23]:
 
 
 with plt.style.context('seaborn-colorblind'):
-    plt.figure(figsize=(9,6))
+    fig = plt.figure(figsize=(9,6))
     plt.plot(np.arange(1,1001), loss_table, label=labels)
     plt.xlabel('Number of iterations')
     plt.ylabel('MSE')
@@ -355,15 +366,17 @@ with plt.style.context('seaborn-colorblind'):
     plt.tight_layout()
     plt.show()
 
+pdf_file.savefig(fig)
 
-# In[96]:
+
+# In[24]:
 
 
 ols.fit(X,y)
 ols.score(X,y)
 
 
-# In[97]:
+# In[25]:
 
 
 np.min(loss_table, axis=0)
@@ -418,7 +431,7 @@ np.min(loss_table, axis=0)
 # \end{aligned}
 # $$
 
-# In[99]:
+# In[26]:
 
 
 class RidgeLs(Ols):
@@ -451,9 +464,9 @@ class RidgeGd(OlsGd):
     # compute weights
     self.w = self.w - self.learning_rate * ((2/self.n)*X.T@(Y_h-Y) + self.ridge_lambda * self.w)
 
-    
 
-
+# **Bonus: Noise as a regularizer**
+# 
 # Let $G\sim N\left(1,\sigma^{2}\right)$ and $X^{\prime}=X\cdot G$ s.t $EX^{\prime}=E\left[X\cdot G\right]=EX$ 
 # 
 # First notice the followig property about $G$ 
@@ -487,12 +500,12 @@ class RidgeGd(OlsGd):
 # 
 # **What is the interpretation?**<br> 
 # An intuitive interpretation is that when there is multiplicative independent noise (measurement error) in the data, on average OLS and Ridge converge. 
-# **NEED TO EXPAND ON THIS**
-# Ridge constraint it is as adding a noise which leads to a  
+# 
+# Using the Ridge constraint is as adding an independent noise which is a function of the covariance matrix which leeds to a negatively biased estimators and a model with lower variance    
 
 # ### Use scikitlearn implementation for OLS, Ridge and Lasso
 
-# In[134]:
+# In[27]:
 
 
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
@@ -512,12 +525,12 @@ Lasso MSE: {mse(y, y_lasso) :.3f} R^2 : {r2_score(y, y_lasso) :.3f}
 """)
 
 
-# In[127]:
+# In[28]:
 
 
 y_hat = ols.predict(X)
 with plt.style.context('seaborn-colorblind'):
-    plt.figure(figsize=(9,9))
+    fig = plt.figure(figsize=(9,9))
     plt.plot(y, y, c='black', linestyle=(0, (5, 10)), label='median price')
     plt.scatter(y, y_ls, c='gray', label='OLS')
     plt.scatter(y, y_ridge, c='blue', label='Ridge')
@@ -529,7 +542,13 @@ with plt.style.context('seaborn-colorblind'):
     plt.tight_layout()
     plt.show()
 
+pdf_file.savefig(fig)
+
 
 # As seen above, without tuning the models the OLS model has the best metric results. From plotting (again) the relation between the target ($Y$) and the predicted targets we see non of the new models improve the prediction in all $Y$ range, and the bad prediction in $Y > 35$ is still highly notable.
 
-# 
+# In[29]:
+
+
+pdf_file.close()
+
